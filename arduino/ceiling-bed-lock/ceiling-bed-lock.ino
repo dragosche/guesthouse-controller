@@ -1,68 +1,73 @@
 #include <Servo.h>
 
-Servo latch1;
-Servo latch2;
+Servo servoToeLeft;
+Servo servoToeRight;
+Servo servoHeadLeft;
+Servo servoHeadRight;
 
-const int SERVO1_PIN = 9;
-const int SERVO2_PIN = 10;
-const int SW_LEFT    = 7;
-const int SW_RIGHT   = 8;
+const int PIN_TOE_LEFT   = 9;
+const int PIN_TOE_RIGHT  = 10;
+const int PIN_HEAD_LEFT  = 11;
+const int PIN_HEAD_RIGHT = 12;
 
-const int ANGLE_MID   = 90;
-const int ANGLE_LEFT  = ANGLE_MID + 30;
-const int ANGLE_RIGHT = ANGLE_MID - 30;
+const int SW_OPEN  = 7;
+const int SW_CLOSE = 8;
+
+// Adjust per corner to match physical mounting orientation
+const int TOE_LEFT_OPEN    = 9;
+const int TOE_LEFT_CLOSE   = 105;
+const int TOE_RIGHT_OPEN   = 54;
+const int TOE_RIGHT_CLOSE  = 140;
+const int HEAD_LEFT_OPEN   = 50;
+const int HEAD_LEFT_CLOSE  = 130;
+const int HEAD_RIGHT_OPEN  = 150;
+const int HEAD_RIGHT_CLOSE = 60;
 
 const unsigned long DEBOUNCE_MS = 50;
 
-int currentAngle = ANGLE_MID;
-int lastSwLeft   = HIGH;
-int lastSwRight  = HIGH;
+int lastSwOpen  = HIGH;
+int lastSwClose = HIGH;
 
-void moveToAngle(int angle) {
-  if (angle != currentAngle) {
-    currentAngle = angle;
-    latch1.write(currentAngle);
-    latch2.write(currentAngle);
-  }
+void openAll() {
+  servoToeLeft.write(TOE_LEFT_OPEN);
+  servoToeRight.write(TOE_RIGHT_OPEN);
+  servoHeadLeft.write(HEAD_LEFT_OPEN);
+  servoHeadRight.write(HEAD_RIGHT_OPEN);
 }
 
-void moveToAngleSlow(int target) {
-  if (target != currentAngle) {
-    int step = (target > currentAngle) ? 1 : -1;
-    while (currentAngle != target) {
-      currentAngle += step;
-      latch1.write(currentAngle);
-      latch2.write(currentAngle);
-      delay(15);
-    }
-  }
+void closeAll() {
+  servoToeLeft.write(TOE_LEFT_CLOSE);
+  servoToeRight.write(TOE_RIGHT_CLOSE);
+  servoHeadLeft.write(HEAD_LEFT_CLOSE);
+  servoHeadRight.write(HEAD_RIGHT_CLOSE);
 }
 
 void setup() {
-  latch1.attach(SERVO1_PIN);
-  latch2.attach(SERVO2_PIN);
-  pinMode(SW_LEFT, INPUT_PULLUP);
-  pinMode(SW_RIGHT, INPUT_PULLUP);
-  latch1.write(ANGLE_MID);
-  latch2.write(ANGLE_MID);
+  servoToeLeft.attach(PIN_TOE_LEFT);
+  servoToeRight.attach(PIN_TOE_RIGHT);
+  servoHeadLeft.attach(PIN_HEAD_LEFT);
+  servoHeadRight.attach(PIN_HEAD_RIGHT);
+  pinMode(SW_OPEN, INPUT_PULLUP);
+  pinMode(SW_CLOSE, INPUT_PULLUP);
+  openAll();
 }
 
 void loop() {
-  int swLeft  = digitalRead(SW_LEFT);
-  int swRight = digitalRead(SW_RIGHT);
+  int swOpen  = digitalRead(SW_OPEN);
+  int swClose = digitalRead(SW_CLOSE);
 
-  if (swLeft == LOW && lastSwLeft == HIGH) {
+  if (swOpen == LOW && lastSwOpen == HIGH) {
     delay(DEBOUNCE_MS);
-    moveToAngle(ANGLE_LEFT);
+    openAll();
   }
 
-  if (swRight == LOW && lastSwRight == HIGH) {
+  if (swClose == LOW && lastSwClose == HIGH) {
     delay(DEBOUNCE_MS);
-    moveToAngle(ANGLE_RIGHT);
+    closeAll();
   }
 
-  lastSwLeft  = swLeft;
-  lastSwRight = swRight;
+  lastSwOpen  = swOpen;
+  lastSwClose = swClose;
 
   delay(20);
 }
